@@ -90,7 +90,7 @@ class TempReader(object):
     def updateTempError(self):
         return self.updateBoilerTemp() - self.updateCommandTemp()
 
-if __name__ = "__main__":
+if __name__ == "__main__":
     L = 10
     IV = 1
     rb = RingBuffer(L, IV)
