@@ -46,7 +46,7 @@ class RingBuffer(object):
         if a is not None:
             self._data[self._index] = a
             self._index = (self._index + 1) % self._size
-            self._value = np.mean(s)
+            self._value = np.mean(self._data)
         return self._value
 
 
