@@ -57,11 +57,11 @@ class TempReader(object):
         self.ads.gain = PGA
     
         self.boiler = AnalogIn(self.ads, ADS.P2)
-        boiler_init = self.__readBoiler()
+        boiler_init = self.__readBoilerTemp()
         self.boiler_buffer = RingBuffer(BUFFER_LEN, boiler_init)
 
         self.command = AnalogIn(self.ads, ADS.P1)
-        command_init = self.__readCommand()
+        command_init = self.__readCommandTemp()
         self.command_buffer = RingBuffer(BUFFER_LEN, command_init)
 
     def __readBoilerTemp(self):
