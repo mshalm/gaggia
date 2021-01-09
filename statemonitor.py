@@ -52,7 +52,7 @@ class Monitor(object):
         self.state = new_state
 
     def controlUpdate(self):
-        self.control = self.pid(tempreader.updateTempError())
+        self.control = self.pid(self.tempreader.updateTempError())
 
         window_position = 100.0 * \
             np.mod(time.time(), WINDOW_SIZE) / WINDOW_SIZE
