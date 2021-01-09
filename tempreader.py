@@ -46,14 +46,14 @@ class RingBuffer(object):
         if a is not None:
             self._data[self._index] = a
             self._index = (self._index + 1) % self._size
-            self._value = np.mean(s)
+            self._value = np.mean(self._data)
         return self._value
 
 
 class TempReader(object):
     def __init__(self):
         self.i2c = busio.I2C(board.SCL, board.SDA)
-        self.ads = ADS.ADS1115(self.boiler_i2c)
+        self.ads = ADS.ADS1115(self.i2c)
         self.ads.gain = PGA
     
         self.boiler = AnalogIn(self.ads, ADS.P2)
