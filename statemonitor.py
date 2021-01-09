@@ -34,11 +34,11 @@ class Monitor(object):
         self.control = 0.0 # [%]
 
     def readState(self):
-        if time.time() - self.start_time > TIMEOUT_TIME
+        if time.time() - self.start_time > TIMEOUT_TIME:
             return State.TIMEOUT
-        elif self.brew.value
+        elif self.brew.value:
             return State.BREW
-        else
+        else:
             return State.IDLE
 
     def stateUpdate(self):
