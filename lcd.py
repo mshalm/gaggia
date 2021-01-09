@@ -71,3 +71,4 @@ if __name__ == "__main__":
     lcd = LCDScreen()
     while True:
         lcd.writeText()
+        time.sleep(UPDATE_MIN_DELAY)
