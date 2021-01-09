@@ -38,7 +38,7 @@ class LCDScreen(object):
     def updateText(self, monitor):
         self.boiler_temp = monitor.tempreader.getBoilerTemp()
         self.command_temp = monitor.tempreader.getCommandTemp()
-        if monitor.state = State.BREW:
+        if monitor.state == State.BREW:
             self.brew_time = time.time() - monitor.switch_time
 
     def printText(self):
