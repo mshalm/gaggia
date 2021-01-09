@@ -2,6 +2,7 @@ import time
 import board
 import digitalio
 from enum import Enum
+import numpy as np
 
 BREW_PIN = board.D4
 SSR_PIN = board.D5
