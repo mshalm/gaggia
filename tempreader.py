@@ -12,8 +12,8 @@ V_POT_MIN = 0.0 # [V]
 V_POT_MAX = 5.0 # [V]
 V_POT_RANGE = V_POT_MAX - V_POT_MIN # [V]
 
-T_POT_MIN = 85.0 # [K]
-T_POT_MAX = 100.0 # [K]
+T_POT_MIN = 95.0 # [K]
+T_POT_MAX = 95.0 # [K]
 T_POT_RANGE = T_POT_MAX - T_POT_MIN # [K]
 
 POT_V2T = T_POT_RANGE / V_POT_RANGE # [K / V]
@@ -82,7 +82,7 @@ class TempReader(object):
         return self.getBoilerTemp(self.__readBoilerTemp())
 
     def updateCommandTemp(self):
-        return self.getCommandTemp(self.__readBoilerTemp())
+        return self.getCommandTemp(self.__readCommandTemp())
 
     def getTempError(self):
         return self.getBoilerTemp() - self.getCommandTemp()
