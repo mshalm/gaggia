@@ -44,7 +44,7 @@ class LCDScreen(object):
     def printText(self):
         return PRINT_TEXT.format(self.boiler_temp, \
             self.command_temp, self.brew_time)
-        
+
     def writeText(self):
         if time.time() - self.write_time > UPDATE_MIN_DELAY
             self.write_time = time.time()
@@ -66,3 +66,7 @@ class LCDScreen(object):
 
             # draw image
             self.screen.image(image)
+
+if __name__ == "__main__":
+    lcd = LCDScreen()
+    lcd.writeText()
