@@ -46,7 +46,7 @@ class LCDScreen(object):
             self.command_temp, self.brew_time)
 
     def writeText(self):
-        if time.time() - self.write_time > UPDATE_MIN_DELAY
+        if time.time() - self.write_time > UPDATE_MIN_DELAY:
             self.write_time = time.time()
 
             # blank canvas
