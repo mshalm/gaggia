@@ -26,11 +26,11 @@ class Monitor(object):
         self.brew = digitalio.DigitalInOut(BREW_PIN)
         self.brew.direction = digitalio.Direction.INPUT
         self.brew.pull = digitalio.Pull.DOWN
-
-        self.state = self.readState()
+        
         self.switch_time = time.time()
         self.start_time = time.time()
         
+        self.state = self.readState()
         self.control = 0.0 # [%]
 
     def readState(self):
