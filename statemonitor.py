@@ -54,7 +54,7 @@ class Monitor(object):
 
     def controlUpdate(self):
         self.control = self.pid(self.tempreader.updateTempError())
-
+        print(self.control)
         window_position = 100.0 * \
             np.mod(time.time(), WINDOW_SIZE) / WINDOW_SIZE
 
@@ -63,7 +63,7 @@ class Monitor(object):
 
     def displayUpdate(self):
         self.lcd.updateText(self)
-
+        self.lcd.writeText()
     def step(self):
         """
         go through transition

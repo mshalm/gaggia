@@ -47,6 +47,7 @@ class LCDScreen(object):
 
     def writeText(self):
         if time.time() - self.write_time > UPDATE_MIN_DELAY:
+            print("display activate")
             self.write_time = time.time()
 
             # blank canvas

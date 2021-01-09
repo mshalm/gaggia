@@ -14,15 +14,15 @@ SCL_PIN = board.SCL
 SDA_PIN = board.SDA
 
 
-KP = 4.5
+KP = 0.5
 KI = 0.125
-KD = 0.2
+KD = 0.00002
 
 def signal_handler(signal, frame):
     global interrupted
     interrupted = True
 
-busio.I2C(SCL_PIN, SDA_PIN)
+i2c = busio.I2C(SCL_PIN, SDA_PIN)
 print("initialize temp reader")
 tempreader = TempReader(i2c)
 
@@ -44,7 +44,7 @@ interrupted = False
 
 print("stepping")
 while not interrupted:
-    # print("stepping")
+    print("stepping")
     monitor.step()
     time.sleep(0.1)
 
