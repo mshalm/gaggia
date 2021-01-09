@@ -45,7 +45,7 @@ class Monitor(object):
         staleness = time.time() - self.switch_time
         
         new_state = self.state
-        if staleness < SWITCH_DELAY
+        if staleness < SWITCH_DELAY:
             new_state = self.readState()
             if new_state != self.state:
                 self.switch_time = time.time()
