@@ -54,7 +54,7 @@ class LCDScreen(object):
 
 
             # construct text draw
-            image = Image.new("1", (oled.width, oled.height))
+            image = Image.new("1", (self.screen.width, self.screen.height))
             draw = ImageDraw.Draw(image)
 
             
