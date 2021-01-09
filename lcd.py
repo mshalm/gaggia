@@ -69,4 +69,5 @@ class LCDScreen(object):
 
 if __name__ == "__main__":
     lcd = LCDScreen()
-    lcd.writeText()
+    while True:
+        lcd.writeText()
