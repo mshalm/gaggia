@@ -9,7 +9,7 @@ from PIL import Image, ImageDraw, ImageFont
 from statemonitor import State, Monitor
 
 
-UPDATE_MIN_DELAY = 0.1
+UPDATE_MIN_DELAY = 0.25
 WIDTH = 128
 HEIGHT = 64
 TITLE = "GAGGIA"
@@ -21,8 +21,8 @@ SCL_PIN = board.SCL
 SDA_PIN = board.SDA
 
 class LCDScreen(object):
-    def __init__(self):
-        self.i2c = busio.I2C(SCL_PIN, SDA_PIN)
+    def __init__(self, i2c):
+        self.i2c = i2c
         self.screen = adafruit_ssd1306.SSD1306_I2C(WIDTH, \
             HEIGHT, self.i2c, addr=0x3c)
         self.boiler_temp = 0.0
@@ -69,7 +69,7 @@ class LCDScreen(object):
             self.screen.show()
 
 if __name__ == "__main__":
-    lcd = LCDScreen()
+    lcd = LCDScreen(busio.I2C(SCL_PIN, SDA_PIN))
     while True:
         lcd.writeText()
         print(lcd.printText())

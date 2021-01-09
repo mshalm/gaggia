@@ -51,8 +51,8 @@ class RingBuffer(object):
 
 
 class TempReader(object):
-    def __init__(self):
-        self.i2c = busio.I2C(board.SCL, board.SDA)
+    def __init__(self, i2c):
+        self.i2c = i2c
         self.ads = ADS.ADS1115(self.i2c)
         self.ads.gain = PGA
     
@@ -101,7 +101,7 @@ if __name__ == "__main__":
         print(rb())
 
     print("TempReader test")
-    tr = TempReader()
+    tr = TempReader(busio.I2C(board.SCL, board.SDA))
     for i in range(L):
         print(tr.updateBoilerTemp())
         print(tr.updateCommandTemp())
