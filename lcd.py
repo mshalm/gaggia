@@ -24,7 +24,7 @@ class LCDScreen(object):
     def __init__(self):
         self.i2c = busio.I2C(SCL_PIN, SDA_PIN)
         self.screen = adafruit_ssd1306.SSD1306_I2C(WIDTH, \
-            HEIGHT, self.i2c, addr=0x3c, reset=None)
+            HEIGHT, self.i2c, addr=0x3c)
         self.boiler_temp = 0.0
         self.command_temp = 0.0
         self.brew_time = 0.0
@@ -66,6 +66,7 @@ class LCDScreen(object):
 
             # draw image
             self.screen.image(image)
+            self.screen.show()
 
 if __name__ == "__main__":
     lcd = LCDScreen()
