@@ -48,4 +48,5 @@ while not interrupted:
     monitor.step()
     time.sleep(0.1)
 
+monitor.cleanup()
 print("Process interrupted.")

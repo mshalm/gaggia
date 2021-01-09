@@ -64,6 +64,11 @@ class Monitor(object):
     def displayUpdate(self):
         self.lcd.updateText(self)
         self.lcd.writeText()
+
+    def controlCleanup(self):
+        # turn off ssr
+        self.ssr.value = False
+
     def step(self):
         """
         go through transition
@@ -71,4 +76,7 @@ class Monitor(object):
         self.stateUpdate()
         self.controlUpdate()
         self.displayUpdate()
+
+    def cleanup(self):
+        self.contrlCleanup()
         
