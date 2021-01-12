@@ -7,7 +7,11 @@ import numpy as np
 BREW_PIN = board.D4
 SSR_PIN = board.D5
 SWITCH_DELAY = 0.01 # [s]
+
 WINDOW_SIZE = 5.0 # [s]
+# required on percentage to drive zero steady-state error
+FIX_POINT = 2.0
+
 TIMEOUT_TIME = 3.0 * 60.0 * 60.0 # [s]
 
 class State(Enum):
@@ -54,7 +58,10 @@ class Monitor(object):
 
     def controlUpdate(self):
         self.control = self.pid(self.tempreader.updateTempError())
-        print(self.control)
+        # print(self.control)
+
+        # adjust for equilibrium
+        self.control = FIX_POINT + self.control 
         window_position = 100.0 * \
             np.mod(time.time(), WINDOW_SIZE) / WINDOW_SIZE
 
@@ -78,5 +85,6 @@ class Monitor(object):
         self.displayUpdate()
 
     def cleanup(self):
-        self.contrlCleanup()
+        self.controlCleanup()
+
         

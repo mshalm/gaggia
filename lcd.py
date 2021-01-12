@@ -9,10 +9,10 @@ from PIL import Image, ImageDraw, ImageFont
 from statemonitor import State, Monitor
 
 
-UPDATE_MIN_DELAY = 0.25
+UPDATE_MIN_DELAY = 0.5
 WIDTH = 128
 HEIGHT = 64
-TITLE = "GAGGIA"
+TITLE = "~GAGGIA~"
 
 PRINT_TEXT = """Temp: {:.1f}\nSet: {:.1f}\nTime: {:.1f}"""
 TEXT_POS = (0, 16)
@@ -47,7 +47,7 @@ class LCDScreen(object):
 
     def writeText(self):
         if time.time() - self.write_time > UPDATE_MIN_DELAY:
-            print("display activate")
+            # print("display activate")
             self.write_time = time.time()
 
             # blank canvas

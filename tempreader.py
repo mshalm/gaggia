@@ -12,8 +12,8 @@ V_POT_MIN = 0.0 # [V]
 V_POT_MAX = 5.0 # [V]
 V_POT_RANGE = V_POT_MAX - V_POT_MIN # [V]
 
-T_POT_MIN = 95.0 # [K]
-T_POT_MAX = 95.0 # [K]
+T_POT_MIN = 93.0 # [K]
+T_POT_MAX = 93.0 # [K]
 T_POT_RANGE = T_POT_MAX - T_POT_MIN # [K]
 
 POT_V2T = T_POT_RANGE / V_POT_RANGE # [K / V]

@@ -14,9 +14,9 @@ SCL_PIN = board.SCL
 SDA_PIN = board.SDA
 
 
-KP = 0.5
-KI = 0.125
-KD = 0.00002
+KP = 5.0
+KI = 0.05
+KD = 1.0
 
 def signal_handler(signal, frame):
     global interrupted
@@ -44,9 +44,9 @@ interrupted = False
 
 print("stepping")
 while not interrupted:
-    print("stepping")
+    #print("stepping")
     monitor.step()
-    time.sleep(0.1)
+    time.sleep(0.01)
 
 monitor.cleanup()
 print("Process interrupted.")
