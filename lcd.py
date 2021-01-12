@@ -80,6 +80,13 @@ class LCDScreen(object):
             draw.text((TEXT_X, 1 * LINE_HEIGHT), \
                 TEMP_STYLE.format(self.boiler_temp), \
                 font=self.font, fill=255)
+            
+            draw.text((TEXT_X, 3 * LINE_HEIGHT), SET_TEXT, \
+                font=self.font, fill=255)
+
+            draw.text((TEXT_X, 4 * LINE_HEIGHT), \
+                TEMP_STYLE.format(self.command_temp), \
+                font=self.font, fill=255)
 
             # draw image
             self.screen.image(image.rotate(270, expand=True))
