@@ -58,10 +58,14 @@ class LCDScreen(object):
             image = Image.new("1", (self.screen.width, self.screen.height))
             draw = ImageDraw.Draw(image)
 
-            
+            # draw headline background
+            draw.rectangle((0, 0, oled.width, 16), outline=255, fill=255)
+
             # draw headline
             draw.text(self.title_pos, TITLE, font=self.font, \
-                fill=255)
+                fill=0)
+
+            
             draw.text(TEXT_POS, self.printText(), font=self.font, \
                 fill=255)
 
