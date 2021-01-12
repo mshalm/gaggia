@@ -12,10 +12,17 @@ from statemonitor import State, Monitor
 UPDATE_MIN_DELAY = 0.5
 WIDTH = 128
 HEIGHT = 64
-TITLE = "~GAGGIA~"
 
-PRINT_TEXT = """Temp: {:.1f}\nSet: {:.1f}\nTime: {:.1f}"""
-TEXT_POS = (0, 16)
+TITLE = "G\nA\nG\nG\nI\nA"
+TITLE_HEIGHT = 14
+LINE_HEIGHT = 16
+
+TEMP_TEXT = "Temp:"
+SET_TEXT  = "Set:"
+
+TEMP_STYLE = "{:.1f}C"
+TIME_STYLE = "{:.f1}s"
+TEXT_X = 15
 
 SCL_PIN = board.SCL
 SDA_PIN = board.SDA
@@ -29,10 +36,11 @@ class LCDScreen(object):
         self.command_temp = 0.0
         self.brew_time = 0.0
         self.write_time = 0.0
+        self.title_font = ImageFont.truetype("FreeMono.ttf", size=16) 
         self.font = ImageFont.truetype("FreeMono.ttf", size=16)
         (title_width, title_height) = self.font.getsize(TITLE)
-        self.title_pos = \
-            (self.screen.width // 2 - title_width // 2, 0)
+        print(title_width, title_height)
+        self.title_pos = (3, 4 + WIDTH // 2 - title_width // 2)
         self.writeText()
 
     def updateText(self, monitor):
@@ -55,22 +63,26 @@ class LCDScreen(object):
 
 
             # construct text draw
-            image = Image.new("1", (self.screen.width, self.screen.height))
+            image = Image.new("1", (self.screen.height, self.screen.width))
             draw = ImageDraw.Draw(image)
 
             # draw headline background
-            draw.rectangle((0, 0, oled.width, 16), outline=255, fill=255)
+            draw.rectangle((0, 0, TITLE_HEIGHT, self.screen.width), outline=255, fill=255)
 
             # draw headline
-            draw.text(self.title_pos, TITLE, font=self.font, \
+            draw.text(self.title_pos, TITLE, font=self.title_font, \
                 fill=0)
 
             
-            draw.text(TEXT_POS, self.printText(), font=self.font, \
+            draw.text((TEXT_X, 0), TEMP_TEXT, font=self.font, \
                 fill=255)
 
+            draw.text((TEXT_X, 1 * LINE_HEIGHT), \
+                TEMP_STYLE.format(self.boiler_temp), \
+                font=self.font, fill=255)
+
             # draw image
-            self.screen.image(image)
+            self.screen.image(image.rotate(270, expand=True))
             self.screen.show()
 
 if __name__ == "__main__":
