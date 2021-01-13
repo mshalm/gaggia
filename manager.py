@@ -1,5 +1,6 @@
 import board
 import busio
+from adafruit_extended_bus import ExtendedI2C
 
 from tempreader import TempReader
 from simple_pid import PID
@@ -22,12 +23,13 @@ def signal_handler(signal, frame):
     global interrupted
     interrupted = True
 
-i2c = busio.I2C(SCL_PIN, SDA_PIN)
+i2c_1 = busio.I2C(SCL_PIN, SDA_PIN)
+i2c_4 = ExtendedI2C(4)
 print("initialize temp reader")
-tempreader = TempReader(i2c)
+tempreader = TempReader(i2c_1)
 
 print("initialize LCD")
-lcd = LCDScreen(i2c)
+lcd = LCDScreen(i2c_4)
 
 # do this last
 print("initialize LCD")
@@ -43,7 +45,11 @@ signal.signal(signal.SIGINT, signal_handler)
 interrupted = False
 
 print("stepping")
+#l_t = time.time()
 while not interrupted:
+    #c_t = time.time()
+    #print(c_t-l_t)
+    #l_t = c_t
     #print("stepping")
     monitor.step()
     time.sleep(0.01)

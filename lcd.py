@@ -19,9 +19,10 @@ LINE_HEIGHT = 16
 
 TEMP_TEXT = "Temp:"
 SET_TEXT  = "Set:"
+TIME_TEXT = "Time:"
 
-TEMP_STYLE = "{:.1f}C"
-TIME_STYLE = "{:.f1}s"
+TEMP_STYLE = "{:.1f}"
+TIME_STYLE = "{:.1f}"
 TEXT_X = 15
 
 SCL_PIN = board.SCL
@@ -39,7 +40,7 @@ class LCDScreen(object):
         self.title_font = ImageFont.truetype("FreeMono.ttf", size=16) 
         self.font = ImageFont.truetype("FreeMono.ttf", size=16)
         (title_width, title_height) = self.font.getsize(TITLE)
-        print(title_width, title_height)
+        # print(title_width, title_height)
         self.title_pos = (3, 4 + WIDTH // 2 - title_width // 2)
         self.writeText()
 
@@ -74,18 +75,25 @@ class LCDScreen(object):
                 fill=0)
 
             
-            draw.text((TEXT_X, 0), TEMP_TEXT, font=self.font, \
-                fill=255)
-
-            draw.text((TEXT_X, 1 * LINE_HEIGHT), \
-                TEMP_STYLE.format(self.boiler_temp), \
-                font=self.font, fill=255)
-            
-            draw.text((TEXT_X, 3 * LINE_HEIGHT), SET_TEXT, \
+            draw.text((TEXT_X, 3 * LINE_HEIGHT), TEMP_TEXT, \
                 font=self.font, fill=255)
 
             draw.text((TEXT_X, 4 * LINE_HEIGHT), \
+                TEMP_STYLE.format(self.boiler_temp), \
+                font=self.font, fill=255)
+            
+            draw.text((TEXT_X, 0 * LINE_HEIGHT), SET_TEXT, \
+                font=self.font, fill=255)
+
+            draw.text((TEXT_X, 1 * LINE_HEIGHT), \
                 TEMP_STYLE.format(self.command_temp), \
+                font=self.font, fill=255)
+
+            draw.text((TEXT_X, 6 * LINE_HEIGHT), TIME_TEXT, \
+                font=self.font, fill=255)
+
+            draw.text((TEXT_X, 7 * LINE_HEIGHT), \
+                TIME_STYLE.format(self.brew_time), \
                 font=self.font, fill=255)
 
             # draw image
