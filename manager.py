@@ -24,12 +24,12 @@ def signal_handler(signal, frame):
     interrupted = True
 
 i2c_1 = busio.I2C(SCL_PIN, SDA_PIN)
-i2c_4 = ExtendedI2C(4, frequency=200000)
+#i2c_4 = ExtendedI2C(4, frequency=200000)
 print("initialize temp reader")
 tempreader = TempReader(i2c_1)
 
 print("initialize LCD")
-lcd = LCDScreen(i2c_4)
+lcd = LCDScreen()
 
 # do this last
 print("initialize LCD")
@@ -46,13 +46,16 @@ interrupted = False
 
 print("stepping")
 l_t = time.time()
+# try:
 while not interrupted:
     c_t = time.time()
-    print(c_t-l_t)
+    #print(c_t-l_t)
     l_t = c_t
-    print("stepping")
+    #print("stepping")
     monitor.step()
-    time.sleep(0.01)
+    time.sleep(0.001)
+#except:
+#    print("exception encountered")
 
 monitor.cleanup()
 print("Process interrupted.")

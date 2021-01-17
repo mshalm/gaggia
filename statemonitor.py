@@ -4,9 +4,9 @@ import digitalio
 from enum import Enum
 import numpy as np
 
-BREW_PIN = board.D4
-SSR_PIN = board.D5
-SWITCH_DELAY = 0.01 # [s]
+BREW_PIN = board.D17
+SSR_PIN = board.D27
+SWITCH_DELAY = 0.05 # [s]
 
 WINDOW_SIZE = 5.0 # [s]
 # required on percentage to drive zero steady-state error
@@ -27,6 +27,7 @@ class Monitor(object):
 
         self.ssr = digitalio.DigitalInOut(SSR_PIN)
         self.ssr.direction = digitalio.Direction.OUTPUT
+        #self.ssr.pull = digitalio.Pull.DOWN
 
         self.brew = digitalio.DigitalInOut(BREW_PIN)
         self.brew.direction = digitalio.Direction.INPUT
@@ -39,6 +40,7 @@ class Monitor(object):
         self.control = 0.0 # [%]
 
     def readState(self):
+        #print(self.brew.value)
         if time.time() - self.start_time > TIMEOUT_TIME:
             return State.TIMEOUT
         elif self.brew.value:
@@ -50,8 +52,9 @@ class Monitor(object):
         staleness = time.time() - self.switch_time
         
         new_state = self.state
-        if staleness < SWITCH_DELAY:
+        if staleness > SWITCH_DELAY:
             new_state = self.readState()
+            #print(new_state)
             if new_state != self.state:
                 self.switch_time = time.time()
         self.state = new_state
@@ -70,11 +73,14 @@ class Monitor(object):
 
     def displayUpdate(self):
         self.lcd.updateText(self)
-        self.lcd.writeText()
+        #self.lcd.writeText()
 
     def controlCleanup(self):
         # turn off ssr
         self.ssr.value = False
+
+    def displayCleanup(self):
+        self.lcd.cleanupScreen()
 
     def step(self):
         """
@@ -86,5 +92,6 @@ class Monitor(object):
 
     def cleanup(self):
         self.controlCleanup()
+        self.displayCleanup()
 
         

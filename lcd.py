@@ -1,7 +1,8 @@
 import board
 import busio
+from adafruit_extended_bus import ExtendedI2C
 import adafruit_ssd1306
-
+import threading
 import time
 
 from PIL import Image, ImageDraw, ImageFont
@@ -25,12 +26,13 @@ TEMP_STYLE = "{:.1f}"
 TIME_STYLE = "{:.1f}"
 TEXT_X = 15
 
-SCL_PIN = board.SCL
-SDA_PIN = board.SDA
+SCL_PIN = board.D7
+SDA_PIN = board.D6
 
-class LCDScreen(object):
-    def __init__(self, i2c):
-        self.i2c = i2c
+class LCDScreen(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.i2c = ExtendedI2C(4, frequency=400000)
         self.screen = adafruit_ssd1306.SSD1306_I2C(WIDTH, \
             HEIGHT, self.i2c, addr=0x3c)
         self.boiler_temp = 0.0
@@ -42,63 +44,78 @@ class LCDScreen(object):
         (title_width, title_height) = self.font.getsize(TITLE)
         # print(title_width, title_height)
         self.title_pos = (3, 4 + WIDTH // 2 - title_width // 2)
+        self.read_lock = threading.Lock()
+        self.stop_event = threading.Event()
         self.writeText()
+        self.start()
+
+    def cleanupScreen(self):
+        self.stop_event.set()
+        self.join()
+
+    def run(self):
+        while not self.stop_event.is_set():
+            self.writeText()
+            time_left = UPDATE_MIN_DELAY - \
+                (time.time() - self.write_time)
+            time.sleep(max(0.0001, time_left))
 
     def updateText(self, monitor):
-        self.boiler_temp = monitor.tempreader.getBoilerTemp()
-        self.command_temp = monitor.tempreader.getCommandTemp()
-        if monitor.state == State.BREW:
-            self.brew_time = time.time() - monitor.switch_time
-
-    def printText(self):
-        return PRINT_TEXT.format(self.boiler_temp, \
-            self.command_temp, self.brew_time)
+        with self.read_lock:
+            self.boiler_temp = monitor.tempreader.getBoilerTemp()
+            self.command_temp = monitor.tempreader.getCommandTemp()
+            if monitor.state == State.BREW:
+                self.brew_time = time.time() - monitor.switch_time
 
     def writeText(self):
-        if time.time() - self.write_time > UPDATE_MIN_DELAY:
-            # print("display activate")
-            self.write_time = time.time()
+        with self.read_lock:
+            boil_t = self.boiler_temp
+            set_t = self.command_temp
+            brew_t = self.brew_time
 
-            # blank canvas
-            self.screen.fill(0)
+        print("display activate")
+        self.write_time = time.time()
+
+        # blank canvas
+        self.screen.fill(0)
 
 
-            # construct text draw
-            image = Image.new("1", (self.screen.height, self.screen.width))
-            draw = ImageDraw.Draw(image)
+        # construct text draw
+        image = Image.new("1", (self.screen.height, self.screen.width))
+        draw = ImageDraw.Draw(image)
 
-            # draw headline background
-            draw.rectangle((0, 0, TITLE_HEIGHT, self.screen.width), outline=255, fill=255)
+        # draw headline background
+        draw.rectangle((0, 0, TITLE_HEIGHT, self.screen.width), outline=255, fill=255)
 
-            # draw headline
-            draw.text(self.title_pos, TITLE, font=self.title_font, \
-                fill=0)
+        # draw headline
+        draw.text(self.title_pos, TITLE, font=self.title_font, \
+            fill=0)
 
             
-            draw.text((TEXT_X, 3 * LINE_HEIGHT), TEMP_TEXT, \
-                font=self.font, fill=255)
+        draw.text((TEXT_X, 3 * LINE_HEIGHT), TEMP_TEXT, \
+            font=self.font, fill=255)
 
-            draw.text((TEXT_X, 4 * LINE_HEIGHT), \
-                TEMP_STYLE.format(self.boiler_temp), \
-                font=self.font, fill=255)
+        draw.text((TEXT_X, 4 * LINE_HEIGHT), \
+            TEMP_STYLE.format(boil_t), \
+            font=self.font, fill=255)
             
-            draw.text((TEXT_X, 0 * LINE_HEIGHT), SET_TEXT, \
-                font=self.font, fill=255)
+        draw.text((TEXT_X, 0 * LINE_HEIGHT), SET_TEXT, \
+            font=self.font, fill=255)
 
-            draw.text((TEXT_X, 1 * LINE_HEIGHT), \
-                TEMP_STYLE.format(self.command_temp), \
-                font=self.font, fill=255)
+        draw.text((TEXT_X, 1 * LINE_HEIGHT), \
+            TEMP_STYLE.format(set_t), \
+            font=self.font, fill=255)
 
-            draw.text((TEXT_X, 6 * LINE_HEIGHT), TIME_TEXT, \
-                font=self.font, fill=255)
+        draw.text((TEXT_X, 6 * LINE_HEIGHT), TIME_TEXT, \
+            font=self.font, fill=255)
 
-            draw.text((TEXT_X, 7 * LINE_HEIGHT), \
-                TIME_STYLE.format(self.brew_time), \
-                font=self.font, fill=255)
+        draw.text((TEXT_X, 7 * LINE_HEIGHT), \
+            TIME_STYLE.format(brew_t), \
+            font=self.font, fill=255)
 
-            # draw image
-            self.screen.image(image.rotate(270, expand=True))
-            self.screen.show()
+        # draw image
+        self.screen.image(image.rotate(270, expand=True))
+        self.screen.show()
 
 if __name__ == "__main__":
     lcd = LCDScreen(busio.I2C(SCL_PIN, SDA_PIN))

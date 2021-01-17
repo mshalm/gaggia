@@ -6,14 +6,16 @@ import numpy as np
 
 PGA = 2
 
-BUFFER_LEN = 16
+BOIL_BUF_LEN = 16
+POT_BUF_LEN = 2
 
 V_POT_MIN = 0.0 # [V]
-V_POT_MAX = 5.0 # [V]
+V_POT_MAX = 2.0 # [V]
 V_POT_RANGE = V_POT_MAX - V_POT_MIN # [V]
 
-T_POT_MIN = 93.0 # [K]
-T_POT_MAX = 93.0 # [K]
+T_POT_MIN = 85.0 # [K]
+T_POT_MAX = 100.0 # [K]
+T_POT_RES = 0.5 # [K]
 T_POT_RANGE = T_POT_MAX - T_POT_MIN # [K]
 
 POT_V2T = T_POT_RANGE / V_POT_RANGE # [K / V]
@@ -34,12 +36,13 @@ c9 = -1.052755e-08
 
 
 class RingBuffer(object):
-    def __init__(self, size, initval = 0.0):
+    def __init__(self, size, initval = 0.0, res = None):
         """Initialization"""
         self._index = 0
         self._size = size
         self._data = np.array([initval] * size)
         self._value = initval
+        self._res = res
 
     def __call__(self, a = None):
         """process reading"""
@@ -47,6 +50,8 @@ class RingBuffer(object):
             self._data[self._index] = a
             self._index = (self._index + 1) % self._size
             self._value = np.mean(self._data)
+            if not self._res is None:
+                self._value = round(self._value / self._res) * self._res
         return self._value
 
 
@@ -58,11 +63,11 @@ class TempReader(object):
     
         self.boiler = AnalogIn(self.ads, ADS.P2)
         boiler_init = self.__readBoilerTemp()
-        self.boiler_buffer = RingBuffer(BUFFER_LEN, boiler_init)
+        self.boiler_buffer = RingBuffer(BOIL_BUF_LEN, boiler_init)
 
-        self.command = AnalogIn(self.ads, ADS.P1)
+        self.command = AnalogIn(self.ads, ADS.P0)
         command_init = self.__readCommandTemp()
-        self.command_buffer = RingBuffer(BUFFER_LEN, command_init)
+        self.command_buffer = RingBuffer(POT_BUF_LEN, command_init, T_POT_RES)
 
     def __readBoilerTemp(self):
         boiler_volts = self.boiler.voltage
@@ -70,7 +75,13 @@ class TempReader(object):
 
     def __readCommandTemp(self):
         pot_volts = self.command.voltage
-        return T_POT_MIN + (pot_volts - V_POT_MIN) * POT_V2T
+         
+        temp = T_POT_MIN + (pot_volts - V_POT_MIN) * POT_V2T
+        
+        # clip to range
+        temp = min(T_POT_MAX, max(temp, T_POT_MIN))
+
+        return temp
 
     def getBoilerTemp(self, nt = None):
         return self.boiler_buffer(nt)
