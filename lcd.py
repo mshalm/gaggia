@@ -14,9 +14,12 @@ UPDATE_MIN_DELAY = 0.5
 WIDTH = 128
 HEIGHT = 64
 
+OFF_TEXT = "-OFF-"
 TITLE = "G\nA\nG\nG\nI\nA"
 TITLE_HEIGHT = 14
 LINE_HEIGHT = 16
+
+PAINT_SIZE = TITLE_HEIGHT - 2
 
 TEMP_TEXT = "Temp:"
 SET_TEXT  = "Set:"
@@ -38,7 +41,9 @@ class LCDScreen(threading.Thread):
         self.boiler_temp = 0.0
         self.command_temp = 0.0
         self.brew_time = 0.0
+        self.state = State.OFF
         self.write_time = 0.0
+        self.paint = False
         self.title_font = ImageFont.truetype("FreeMono.ttf", size=16) 
         self.font = ImageFont.truetype("FreeMono.ttf", size=16)
         (title_width, title_height) = self.font.getsize(TITLE)
@@ -52,6 +57,7 @@ class LCDScreen(threading.Thread):
     def cleanupScreen(self):
         self.stop_event.set()
         self.join()
+        self.writeText()
 
     def run(self):
         while not self.stop_event.is_set():
@@ -64,34 +70,11 @@ class LCDScreen(threading.Thread):
         with self.read_lock:
             self.boiler_temp = monitor.tempreader.getBoilerTemp()
             self.command_temp = monitor.tempreader.getCommandTemp()
+            self.state = monitor.state
             if monitor.state == State.BREW:
                 self.brew_time = time.time() - monitor.switch_time
 
-    def writeText(self):
-        with self.read_lock:
-            boil_t = self.boiler_temp
-            set_t = self.command_temp
-            brew_t = self.brew_time
-
-        print("display activate")
-        self.write_time = time.time()
-
-        # blank canvas
-        self.screen.fill(0)
-
-
-        # construct text draw
-        image = Image.new("1", (self.screen.height, self.screen.width))
-        draw = ImageDraw.Draw(image)
-
-        # draw headline background
-        draw.rectangle((0, 0, TITLE_HEIGHT, self.screen.width), outline=255, fill=255)
-
-        # draw headline
-        draw.text(self.title_pos, TITLE, font=self.title_font, \
-            fill=0)
-
-            
+    def drawState(self, draw, boil_t, set_t, brew_t):
         draw.text((TEXT_X, 3 * LINE_HEIGHT), TEMP_TEXT, \
             font=self.font, fill=255)
 
@@ -112,6 +95,47 @@ class LCDScreen(threading.Thread):
         draw.text((TEXT_X, 7 * LINE_HEIGHT), \
             TIME_STYLE.format(brew_t), \
             font=self.font, fill=255)
+        return draw
+
+    def drawOff(self, draw):
+        draw.text((TEXT_X, (7 * LINE_HEIGHT) // 2), OFF_TEXT, \
+            font=self.font, fill=255)
+        return draw
+
+    def writeText(self):
+        with self.read_lock:
+            boil_t = self.boiler_temp
+            set_t = self.command_temp
+            brew_t = self.brew_time
+            state_t = self.state
+
+        #print("display activate")
+        self.write_time = time.time()
+
+        # blank canvas
+        #self.screen.fill(0)
+
+
+        # construct text draw
+        image = Image.new("1", (self.screen.height, self.screen.width))
+        draw = ImageDraw.Draw(image)
+
+        # draw headline background
+        draw.rectangle((0, 0, TITLE_HEIGHT, self.screen.width), outline=255, fill=255)
+
+        # draw blink
+        if self.paint:
+            coords = (1, self.screen.width - PAINT_SIZE - 1, PAINT_SIZE + 1, self.screen.width-1-1)
+            draw.rectangle(coords, outline=0, fill=0)
+        self.paint = not self.paint
+
+        # draw headline
+        draw.text(self.title_pos, TITLE, font=self.title_font, \
+            fill=0)
+        if state_t == State.OFF:
+            draw = self.drawOff(draw)
+        else:
+            draw = self.drawState(draw, boil_t, set_t, brew_t)    
 
         # draw image
         self.screen.image(image.rotate(270, expand=True))

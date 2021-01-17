@@ -10,20 +10,23 @@ SWITCH_DELAY = 0.05 # [s]
 
 WINDOW_SIZE = 5.0 # [s]
 # required on percentage to drive zero steady-state error
-FIX_POINT = 2.0
+FIX_POINT = 2.1
+
+CONTROL_RESET_STEPS = round(30.0 / SWITCH_DELAY) # [steps]
 
 TIMEOUT_TIME = 3.0 * 60.0 * 60.0 # [s]
 
 class State(Enum):
     IDLE = 1
     BREW = 2
-    TIMEOUT = 3
+    OFF = 3
 
 class Monitor(object):
-    def __init__(self, tempreader, pid, lcd):
+    def __init__(self, tempreader, pid, lcd, server):
         self.tempreader = tempreader
         self.pid = pid
         self.lcd = lcd
+        self.server = server
 
         self.ssr = digitalio.DigitalInOut(SSR_PIN)
         self.ssr.direction = digitalio.Direction.OUTPUT
@@ -38,11 +41,14 @@ class Monitor(object):
         
         self.state = self.readState()
         self.control = 0.0 # [%]
+        self.steps = 0
 
     def readState(self):
         #print(self.brew.value)
         if time.time() - self.start_time > TIMEOUT_TIME:
-            return State.TIMEOUT
+            return State.OFF
+        elif not self.server.is_powered():
+            return State.OFF
         elif self.brew.value:
             return State.BREW
         else:
@@ -57,9 +63,14 @@ class Monitor(object):
             #print(new_state)
             if new_state != self.state:
                 self.switch_time = time.time()
+            self.steps += 1
         self.state = new_state
 
     def controlUpdate(self):
+        if self.steps > CONTROL_RESET_STEPS:
+            self.steps = 0
+            self.pid.reset()
+            #print('control reset!')
         self.control = self.pid(self.tempreader.updateTempError())
         # print(self.control)
 
@@ -69,17 +80,21 @@ class Monitor(object):
             np.mod(time.time(), WINDOW_SIZE) / WINDOW_SIZE
 
         self.ssr.value = window_position < self.control \
-            and (self.state is not State.TIMEOUT)
+            and (self.state is not State.OFF)
 
     def displayUpdate(self):
         self.lcd.updateText(self)
         #self.lcd.writeText()
+
+    def stateCleanup(self):
+        self.state = State.OFF
 
     def controlCleanup(self):
         # turn off ssr
         self.ssr.value = False
 
     def displayCleanup(self):
+        self.displayUpdate()
         self.lcd.cleanupScreen()
 
     def step(self):
@@ -91,6 +106,7 @@ class Monitor(object):
         self.displayUpdate()
 
     def cleanup(self):
+        self.stateCleanup()
         self.controlCleanup()
         self.displayCleanup()
 

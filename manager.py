@@ -6,6 +6,7 @@ from tempreader import TempReader
 from simple_pid import PID
 from statemonitor import Monitor
 from lcd import LCDScreen
+from server import Server
 
 import signal
 import time
@@ -16,8 +17,8 @@ SDA_PIN = board.SDA
 
 
 KP = 5.0
-KI = 0.05
-KD = 1.0
+KI = 0.01
+KD = 5.0
 
 def signal_handler(signal, frame):
     global interrupted
@@ -32,11 +33,14 @@ print("initialize LCD")
 lcd = LCDScreen()
 
 # do this last
-print("initialize LCD")
+print("initialize PID")
 pid = PID(KP, KI, KD, setpoint=0.0)
 
+print("initialize Server")
+server = Server()
+
 print("initialize Monitor")
-monitor = Monitor(tempreader, pid, lcd)
+monitor = Monitor(tempreader, pid, lcd, server)
 
 print("Set SIGINT handler")
 signal.signal(signal.SIGINT, signal_handler)
