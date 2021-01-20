@@ -14,17 +14,18 @@
         $(document).ready(function(){
             $("#On").click(function(){
                 $.get("/on", function(data, status){
-                console.log(data);
+                $("#console").html(data);
                 });
             });
             $("#Off").click(function(){
                 $.get("/off", function(data, status){
-                console.log(data);
+                $("#console").html(data);
                 });
             });
         });
     </script>
-    <button type="button" id="On">Turn On</button>
-    <button type="button" id="Off">Turn Off</button>
+    <button type="button" id="On" class="ui-btn">Turn On</button>
+    <button type="button" id="Off" class="ui-btn">Turn Off</button>
+    <div id="console"></div>
 </body>
 </html>
