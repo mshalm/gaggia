@@ -1,0 +1,30 @@
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <title>Gaggia Control Panel</title>
+    <meta name="description" content="HTML control panel for Gaggia Baby Class Boiler">
+    <meta name="author" content="Matt Halm">
+
+</head>
+
+<body>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function(){
+            $("#On").click(function(){
+                $.get("http://192.168.0.10:5000/on", function(data, status){
+                console.log(data);
+                });
+            });
+            $("#Off").click(function(){
+                $.get("http://192.168.0.10:5000/off", function(data, status){
+                console.log(data);
+                });
+            });
+        });
+    </script>
+    <button type="button" id="On">Turn On</button>
+    <button type="button" id="Off">Turn Off</button>
+</body>
+</html>

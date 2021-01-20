@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 import threading
 import time
 
@@ -20,7 +20,7 @@ class Server(threading.Thread):
         self.start()
 
     def run(self):
-        app = Flask(__name__)
+        app = Flask(__name__, static_url_path='')
         @app.route("/on")
         def on():
             with self.state_lock:
@@ -33,6 +33,10 @@ class Server(threading.Thread):
             with self.state_lock:
                 self.power = False
             return "Turned Off!"
+
+        @app.route("/")
+        def root():
+            return app.send_static_file('index.html')
         
         app.run(host='0.0.0.0', port=PORT)
 
