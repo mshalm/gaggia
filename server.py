@@ -4,6 +4,8 @@ import time
 
 PORT = 5000
 
+TIMEOUT_TIME = 2.0 * 60.0 * 60.0 # [s]
+
 class Server(threading.Thread):
 
     def __init__(self):
@@ -12,6 +14,7 @@ class Server(threading.Thread):
         #self.ctx = app.app_context()
         #self.ctx.push()
         self.state_lock = threading.Lock()
+        self.on_time = time.time()
         self.power = True
         self.setDaemon(True)
         self.start()
@@ -22,6 +25,7 @@ class Server(threading.Thread):
         def on():
             with self.state_lock:
                 self.power = True
+                self.on_time = time.time()
             return "Turned On!"
 
         @app.route("/off")
@@ -33,10 +37,12 @@ class Server(threading.Thread):
         app.run(host='0.0.0.0', port=PORT)
 
     def is_powered(self):
+        stale = False
         power = False
         with self.state_lock:
             power = self.power
-        return power
+            stale = time.time() - self.on_time > TIMEOUT_TIME
+        return power and (not stale)
 
     def shutdown(self):
         pass

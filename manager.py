@@ -16,8 +16,8 @@ SCL_PIN = board.SCL
 SDA_PIN = board.SDA
 
 
-KP = 5.0
-KI = 0.01
+KP = 8.0
+KI = 0.05
 KD = 5.0
 
 def signal_handler(signal, frame):

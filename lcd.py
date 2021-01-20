@@ -19,7 +19,8 @@ TITLE = "G\nA\nG\nG\nI\nA"
 TITLE_HEIGHT = 14
 LINE_HEIGHT = 16
 
-PAINT_SIZE = TITLE_HEIGHT - 2
+PAINT_BORDER = 3
+PAINT_SIZE = TITLE_HEIGHT - 2 * PAINT_BORDER
 
 TEMP_TEXT = "Temp:"
 SET_TEXT  = "Set:"
@@ -125,7 +126,8 @@ class LCDScreen(threading.Thread):
 
         # draw blink
         if self.paint:
-            coords = (1, self.screen.width - PAINT_SIZE - 1, PAINT_SIZE + 1, self.screen.width-1-1)
+            coords = (PAINT_BORDER, self.screen.width - PAINT_SIZE - PAINT_BORDER - 1, \
+                    PAINT_SIZE + PAINT_BORDER, self.screen.width - PAINT_BORDER - 1)
             draw.rectangle(coords, outline=0, fill=0)
         self.paint = not self.paint
 

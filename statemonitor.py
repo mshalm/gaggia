@@ -14,8 +14,6 @@ FIX_POINT = 2.1
 
 CONTROL_RESET_STEPS = round(30.0 / SWITCH_DELAY) # [steps]
 
-TIMEOUT_TIME = 3.0 * 60.0 * 60.0 # [s]
-
 class State(Enum):
     IDLE = 1
     BREW = 2
@@ -45,9 +43,7 @@ class Monitor(object):
 
     def readState(self):
         #print(self.brew.value)
-        if time.time() - self.start_time > TIMEOUT_TIME:
-            return State.OFF
-        elif not self.server.is_powered():
+        if not self.server.is_powered():
             return State.OFF
         elif self.brew.value:
             return State.BREW
@@ -60,14 +56,13 @@ class Monitor(object):
         new_state = self.state
         if staleness > SWITCH_DELAY:
             new_state = self.readState()
-            #print(new_state)
             if new_state != self.state:
                 self.switch_time = time.time()
             self.steps += 1
         self.state = new_state
 
     def controlUpdate(self):
-        if self.steps > CONTROL_RESET_STEPS:
+        if self.steps > CONTROL_RESET_STEPS or self.state == State.OFF:
             self.steps = 0
             self.pid.reset()
             #print('control reset!')
