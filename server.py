@@ -20,7 +20,12 @@ class Server(threading.Thread):
         self.start()
 
     def run(self):
-        app = Flask(__name__, static_url_path='')
+        app = Flask(__name__)
+        
+        @app.route("/")
+        def root():
+            return app.send_static_file('index.html')
+
         @app.route("/on")
         def on():
             with self.state_lock:
@@ -34,10 +39,6 @@ class Server(threading.Thread):
                 self.power = False
             return "Turned Off!"
 
-        @app.route("/")
-        def root():
-            return app.send_static_file('index.html')
-        
         app.run(host='0.0.0.0', port=PORT)
 
     def is_powered(self):
