@@ -1,9 +1,8 @@
 import time
 import board
 import digitalio
-from enum import Enum
 import numpy as np
-
+from state import State
 BREW_PIN = board.D17
 SSR_PIN = board.D27
 SWITCH_DELAY = 0.05 # [s]
@@ -14,12 +13,8 @@ FIX_POINT = 2.1
 
 CONTROL_RESET_STEPS = round(30.0 / SWITCH_DELAY) # [steps]
 
-class State(Enum):
-    IDLE = 1
-    BREW = 2
-    OFF = 3
-
 class Monitor(object):
+
     def __init__(self, tempreader, pid, lcd, server):
         self.tempreader = tempreader
         self.pid = pid
@@ -78,8 +73,9 @@ class Monitor(object):
             and (self.state is not State.OFF)
 
     def displayUpdate(self):
-        self.lcd.updateText(self)
-        #self.lcd.writeText()
+        #self.lcd.updateText(self)
+        self.server.updateReport(self.tempreader)
+        pass
 
     def stateCleanup(self):
         self.state = State.OFF
@@ -90,7 +86,7 @@ class Monitor(object):
 
     def displayCleanup(self):
         self.displayUpdate()
-        self.lcd.cleanupScreen()
+        #self.lcd.cleanupScreen()
 
     def step(self):
         """

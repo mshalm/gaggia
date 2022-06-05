@@ -30,7 +30,7 @@ print("initialize temp reader")
 tempreader = TempReader(i2c_1)
 
 print("initialize LCD")
-lcd = LCDScreen()
+lcd = None#LCDScreen()
 
 # do this last
 print("initialize PID")
@@ -51,12 +51,17 @@ interrupted = False
 print("stepping")
 l_t = time.time()
 # try:
+i = 0
 while not interrupted:
     c_t = time.time()
     #print(c_t-l_t)
     l_t = c_t
     #print("stepping")
     monitor.step()
+    i += 1
+    if i==10:
+        i = 0
+        print(tempreader.getBoilerTemp())
     time.sleep(0.001)
 #except:
 #    print("exception encountered")

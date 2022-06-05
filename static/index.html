@@ -3,18 +3,93 @@
     <meta charset="utf-8">
 
     <title>Gaggia Control Panel</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico?">
     <meta name="description" content="HTML control panel for Gaggia Baby Class Boiler">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
     <meta name="author" content="Matt Halm">
-    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+    <!--<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+	-->
+    <link rel="stylesheet" href="//code.jquery.com/mobile/1.5.0-alpha.1/jquery.mobile-1.5.0-alpha.1.min.css" />
+    <script src="//code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="//code.jquery.com/mobile/1.5.0-alpha.1/jquery.mobile-1.5.0-alpha.1.min.js"></script>
+    <script src="/static/gauge.js"></script>
+    <style>
+    html, body { padding: 0; margin: 0; }
+    html, .ui-mobile, .ui-mobile body {
+        height: 85px;
+    }
+    .ui-mobile, .ui-mobile .ui-page {
+        min-height: 85px;
+    }
+    .ui-content{
+        padding:10px 15px 0px 15px;
+    }
+    </style>
 </head>
 
 <body>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+    -->
     <script>
         $(document).ready(function(){
-            $("#On").click(function(){
+	    // GAUGE SETUP
+	    const MIN_GAUGE = 10;
+	    const MAX_GAUGE = 160;
+	    function getRanges (setpoint) {
+		    const p1 = setpoint - 10;
+		    const p2 = p1 + 5;
+		    const p5 = setpoint + 10;
+		    const p4 = p5 - 5;
+		    var zones = [
+			       {strokeStyle: "#F03E3E", min: MIN_GAUGE, max: p1}, // Red from 100 to 130
+			       {strokeStyle: "#FFDD00", min: p1, max: p2}, // Yellow
+			       {strokeStyle: "#30B32D", min: p2, max: p4}, // Green
+			       {strokeStyle: "#FFDD00", min: p4, max: p5}, // Yellow
+			       {strokeStyle: "#F03E3E", min: p5, max: MAX_GAUGE}  // Red
+			    ]
+		    return zones
+	    }
+	    var zones = getRanges(90);
+	    console.log(zones);
+
+            var opts = {
+                angle: -0.2, // The span of the gauge arc
+		lineWidth: 0.2, // The line thickness
+		radiusScale: 0.9,
+		pointer: {
+		    length: 0.6, // // Relative to gauge radius
+	            strokeWidth: 0.05, // The thickness
+		    color: '#000000' // Fill color
+		},
+		limitMax: false,     // If false, max value increases automatically if value > maxValue
+		limitMin: false,     // If true, the min value of the gauge will be fixed
+		highDpiSupport: true,     // High resolution support
+		staticZones: zones,
+		staticLabels: {
+		    font: "20px sans-serif",
+		    labels: [MIN_GAUGE, MAX_GAUGE],
+		    fractionDigits: 0
+		}
+	    };
+	    var target = document.getElementById('boiler_gauge'); // your canvas element
+            console.log(target);
+	    const resize = () => {
+	        target.width = window.innerWidth;
+	        target.height = 0.5 *  target.width;
+	    }
+
+	    resize()
+	    window.addEventListener('resize', resize)
+	    var gauge = new Gauge(target).setOptions(opts); // create sexy gauge!
+            gauge.maxValue = MAX_GAUGE; // set max gauge value
+            gauge.setMinValue(MIN_GAUGE);  // Prefer setter over gauge.minValue = 0
+            gauge.animationSpeed = 32; // set animation speed (32 is default value)
+	    gauge.setOptions(opts);
+            
+	    $("#On").click(function(){
                 $.get("/on", function(data, status){
                 $("#console").html(data);
                 });
@@ -24,10 +99,43 @@
                 $("#console").html(data);
                 });
             });
+	    var interval;
+	    var ui_buttons_init = false;
+	    function callAjax() {
+  		$.getJSON('/state', function (data) {
+                        $('#temp').html(data["boiler"].toString());// first set the value 
+                        opts.staticZones = getRanges(data["command"]);
+			gauge.setOptions(opts);
+			gauge.set(data["boiler"]);
+			console.log(ui_buttons_init);
+			if (!ui_buttons_init) {
+			    ui_buttons_init = true;
+			    console.log(ui_buttons_init);
+			    $("#slider-1").val(parseInt(data["command"]));
+			    $("#slider-1").slider("refresh");
+			}
+			interval = setTimeout(callAjax, 500);   
+                });
+	    }
+	    callAjax();
         });
     </script>
-    <button type="button" id="On" class="ui-btn">Turn On</button>
-    <button type="button" id="Off" class="ui-btn">Turn Off</button>
+    <div data-role="page">
+    <button type="button" id="On" class="ui-btn">Brew</button>
+    <button type="button" id="Steam" class="ui-btn">Steam</button>
+    <button type="button" id="Off" class="ui-btn">Off</button>
+    <div role="main" class="ui-content">
+    	<label for="slider-1">Brew Temperature:</label>
+    	<input type="range" name="slider-1" id="slider-1" value="92" min="85" max="100">
+    	<label for="slider-2">Steam Temperature:</label>
+    	<input type="range" name="slider-2" id="slider-2" value="125" min="120" max="130">
+        <div id="temp" style="text-align: center;"></div>
+	<p align="center">
+	<canvas width=500 height=300 id="boiler_gauge"></canvas>
+	</p>
+    </div>
     <div id="console"></div>
+    <br/>
+    </div>
 </body>
 </html>

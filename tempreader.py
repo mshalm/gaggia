@@ -3,7 +3,7 @@ import busio
 import adafruit_ads1x15.ads1115 as ADS
 from adafruit_ads1x15.analog_in import AnalogIn
 import numpy as np
-
+import time
 PGA = 2
 
 BOIL_BUF_LEN = 16
@@ -113,7 +113,10 @@ if __name__ == "__main__":
 
     print("TempReader test")
     tr = TempReader(busio.I2C(board.SCL, board.SDA))
-    for i in range(L):
+    print(AnalogIn(tr.ads, ADS.P2).voltage)
+
+    while True:
+        time.sleep(1)
         print(tr.updateBoilerTemp())
         print(tr.updateCommandTemp())
         print(tr.updateTempError())

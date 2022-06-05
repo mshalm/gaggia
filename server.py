@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, send_from_directory, jsonify
 import threading
 import time
 
@@ -17,10 +17,28 @@ class Server(threading.Thread):
         self.on_time = time.time()
         self.power = True
         self.setDaemon(True)
+        self.temp = 0.
+        self.cmd = 0.
         self.start()
+
+    def updateReport(self, tempreader):
+        self.temp = tempreader.getBoilerTemp()
+        self.cmd = tempreader.getCommandTemp()
 
     def run(self):
         app = Flask(__name__)
+
+        @app.route("/images/favicon.ico")
+        def favicon():
+            return send_from_directory('static','favicon.ico', mimetype='image/vnd.microsoft.icon')
+
+        @app.route("/manifest.json")
+        def send_manifest():
+            return send_from_directory("static", "manifest.json")
+
+        @app.route("/static/<path:path>")
+        def send_static(path):
+            return send_from_directory('static', path)
         
         @app.route("/")
         def root():
@@ -38,6 +56,11 @@ class Server(threading.Thread):
             with self.state_lock:
                 self.power = False
             return "Turned Off!"
+
+        @app.route("/state")
+        def temp():
+            return jsonify({"boiler": self.temp,"command" : self.cmd})
+            #return "Boiler: {0:.1f}\n Setpoint: {1:.1f}".format(self.temp, self.cmd)
 
         app.run(host='0.0.0.0', port=PORT)
 
